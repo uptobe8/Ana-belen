@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8ee">
+  <meta name="description" content="Juegos de estimulación cognitiva y reminiscencia familiar con fotos y voz humana.">
+  <title>Memoria Familiar</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="topbar" class="topbar" hidden>
+    <button id="backBtn" class="nav-btn" type="button">← Inicio</button>
+    <div id="screenTitle" class="top-title">Memoria Familiar</div>
+    <button id="soundBtn" class="nav-btn" type="button">Voz</button>
+  </header>
+
+  <main id="app" class="app" aria-live="polite"></main>
+
+  <template id="homeTemplate">
+    <section class="home-shell">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <div class="eyebrow">Estimulación tranquila · sin tiempo · sin penalización</div>
+          <h1>Memoria Familiar</h1>
+          <p>Actividades visuales con fotos reales, voz humana y botones grandes para acompañar sesiones cortas.</p>
+          <div class="hero-actions">
+            <button class="primary-action" data-action="same" type="button">Empezar con fotos iguales</button>
+            <button class="secondary-action" data-action="settings" type="button">Configurar nombres</button>
+          </div>
+        </div>
+        <div class="hero-preview" aria-hidden="true">
+          <img src="assets/personas/persona_01.jpg" alt="">
+          <img src="assets/personas/persona_03.jpg" alt="">
+          <img src="assets/personas/persona_08.jpg" alt="">
+        </div>
+      </div>
+
+      <div class="activity-grid" aria-label="Actividades disponibles">
+        <button class="activity-card blue" data-action="who" type="button"><span>¿Quién es?</span><small>Foto grande y dos nombres.</small></button>
+        <button class="activity-card teal" data-action="same" type="button"><span>Encuentra la misma foto</span><small>La imagen objetivo siempre queda visible.</small></button>
+        <button class="activity-card violet" data-action="name-photo" type="button"><span>Foto + nombre</span><small>Nombre grande y fotos visibles.</small></button>
+        <button class="activity-card amber" data-action="memory" type="button"><span>Empareja caras</span><small>4 cartas al inicio, con ayuda visual.</small></button>
+        <button class="activity-card rose" data-action="album" type="button"><span>Álbum de recuerdos</span><small>Conversación guiada sin acertar ni fallar.</small></button>
+        <button class="activity-card green" data-action="voice" type="button"><span>Voz conocida + foto</span><small>Preparado para audios familiares.</small></button>
+      </div>
+
+      <p class="medical-note">La app está pensada como apoyo de estimulación y acompañamiento. No sustituye valoración médica ni tratamiento.</p>
+    </section>
+  </template>
+
+  <script src="data/personas.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
