@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memoria-familiar-v7-music-2026';
+const CACHE_NAME = 'memoria-familiar-v8-jazz-autoplay-2026';
 const APP_FILES = [
   "./",
   "./index.html",
