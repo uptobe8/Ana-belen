@@ -1,57 +1,71 @@
 (() => {
-  const STORAGE_KEY = 'memoria_familiar_youtube_music_v3';
-  const TRACK_KEY = 'memoria_familiar_youtube_track_v1';
+  const STORAGE_KEY = 'memoria_familiar_youtube_music_v4';
+  const TRACK_KEY = 'memoria_familiar_youtube_track_v2';
+  const OLD_KEYS = [
+    'memoria_familiar_musica_relajante_v1',
+    'memoria_familiar_musica_relajante_v2',
+    'memoria_familiar_youtube_music_v1',
+    'memoria_familiar_youtube_music_v2',
+    'memoria_familiar_youtube_music_v3'
+  ];
   const TRACKS = [
-    { id: 'PRAGLqfNK1o', name: 'Jazz relajante 1' },
-    { id: 'NJuSStkIZBg', name: 'Jazz relajante 2' },
-    { id: 'WAclZ03EH6s', name: 'Jazz relajante 3' },
-    { id: 'BhafPvwQqAs', name: 'Jazz relajante 4' },
-    { id: 'i8W-LdXKT6s', name: 'Jazz relajante 5' }
+    { id: 'PRAGLqfNK1o', name: 'Jazz Radio' },
+    { id: 'NJuSStkIZBg', name: 'Jazz tranquilo' },
+    { id: 'WAclZ03EH6s', name: 'Jazz suave' },
+    { id: 'BhafPvwQqAs', name: 'Jazz relajante' },
+    { id: 'i8W-LdXKT6s', name: 'Jazz ambiente' }
   ];
 
-  let enabled = readEnabled();
-  let current = readTrack();
+  let enabled = true;
+  let current = 0;
   let frame = null;
-  let started = false;
+  let retryTimer = null;
+
+  function cleanOldState() {
+    try { OLD_KEYS.forEach(key => localStorage.removeItem(key)); } catch {}
+  }
 
   function readEnabled() {
-    try { return localStorage.getItem(STORAGE_KEY) !== 'off'; }
-    catch { return true; }
+    try {
+      const value = localStorage.getItem(STORAGE_KEY);
+      return value !== 'off';
+    } catch { return true; }
   }
+
   function saveEnabled(value) {
-    try { localStorage.setItem(STORAGE_KEY, value ? 'on' : 'off'); }
-    catch {}
+    try { localStorage.setItem(STORAGE_KEY, value ? 'on' : 'off'); } catch {}
   }
+
   function readTrack() {
     try {
       const value = Number(localStorage.getItem(TRACK_KEY));
       return Number.isFinite(value) ? Math.max(0, Math.min(TRACKS.length - 1, value)) : 0;
     } catch { return 0; }
   }
+
   function saveTrack(value) {
-    try { localStorage.setItem(TRACK_KEY, String(value)); }
-    catch {}
+    try { localStorage.setItem(TRACK_KEY, String(value)); } catch {}
   }
 
-  function srcFor(track) {
+  function youtubeSrc(track) {
     const id = track.id;
-    return `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&loop=1&playlist=${id}&controls=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
   }
 
   function createUi() {
     const style = document.createElement('style');
     style.textContent = `
-      .music-panel { position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 35; display: grid; grid-template-columns: 190px minmax(180px, 1fr); gap: 10px; padding: 10px; border: 2px solid rgba(228,216,200,.95); border-radius: 24px; background: rgba(255,255,255,.96); box-shadow: 0 14px 36px rgba(46,36,24,.18); backdrop-filter: blur(12px); }
-      .music-video { width: 190px; height: 108px; border-radius: 18px; overflow: hidden; background: #eef4ff; }
-      .music-video iframe { width: 100%; height: 100%; border: 0; display: block; }
-      .music-controls { display: grid; gap: 8px; align-content: center; }
-      .music-toggle, .music-select { min-height: 50px; border: 0; border-radius: 16px; padding: 10px 14px; font: 900 1rem Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
-      .music-toggle { background: #ecfbf7; color: #075d51; display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
-      .music-toggle[aria-pressed="false"] { background: #fff4df; color: #5b3200; }
-      .music-select { background: #eef4ff; color: #0f285d; border: 2px solid rgba(36,107,254,.16); }
-      .music-dot { width: 11px; height: 11px; border-radius: 999px; background: #00a38c; box-shadow: 0 0 0 6px rgba(0,163,140,.16); flex: 0 0 auto; }
-      .music-toggle[aria-pressed="false"] .music-dot { background: #b65c00; box-shadow: 0 0 0 6px rgba(182,92,0,.12); }
-      @media (max-width: 720px) { .music-panel { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); grid-template-columns: 120px 1fr; border-radius: 22px; } .music-video { width: 120px; height: 68px; } .music-toggle, .music-select { min-height: 44px; font-size: .95rem; } body { padding-bottom: 104px; } }
+      .music-panel{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:150px 210px;gap:10px;padding:10px;border:2px solid rgba(228,216,200,.95);border-radius:24px;background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(46,36,24,.18);backdrop-filter:blur(12px)}
+      .music-video{width:150px;height:84px;border-radius:18px;overflow:hidden;background:#eef4ff;border:1px solid rgba(36,107,254,.18)}
+      .music-video iframe{width:100%;height:100%;border:0;display:block}
+      .music-controls{display:grid;gap:8px;align-content:center}
+      .music-toggle,.music-select{min-height:42px;border-radius:16px;padding:9px 12px;font:900 .95rem Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+      .music-toggle{border:0;background:#ecfbf7;color:#075d51;display:inline-flex;align-items:center;justify-content:center;gap:9px;touch-action:manipulation}
+      .music-toggle[aria-pressed="false"]{background:#fff4df;color:#5b3200}
+      .music-select{background:#eef4ff;color:#0f285d;border:2px solid rgba(36,107,254,.16)}
+      .music-dot{width:11px;height:11px;border-radius:999px;background:#00a38c;box-shadow:0 0 0 6px rgba(0,163,140,.16);flex:0 0 auto}
+      .music-toggle[aria-pressed="false"] .music-dot{background:#b65c00;box-shadow:0 0 0 6px rgba(182,92,0,.12)}
+      @media(max-width:720px){.music-panel{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));grid-template-columns:130px 1fr;border-radius:22px}.music-video{width:130px;height:74px}.music-toggle,.music-select{min-height:42px;font-size:.9rem}body{padding-bottom:112px}}
     `;
     document.head.appendChild(style);
 
@@ -66,8 +80,15 @@
     document.body.appendChild(panel);
 
     frame = document.getElementById('ytBackgroundMusic');
-    document.getElementById('musicToggleBtn').addEventListener('click', event => { event.stopPropagation(); toggleMusic(); });
-    document.getElementById('musicSelect').addEventListener('change', event => { current = Number(event.target.value); saveTrack(current); if (enabled) startMusic(true); });
+    document.getElementById('musicToggleBtn').addEventListener('click', event => {
+      event.stopPropagation();
+      toggleMusic();
+    });
+    document.getElementById('musicSelect').addEventListener('change', event => {
+      current = Number(event.target.value);
+      saveTrack(current);
+      if (enabled) startMusic(true);
+    });
     updateUi();
   }
 
@@ -77,18 +98,25 @@
     if (select) select.value = String(current);
     if (!button) return;
     button.setAttribute('aria-pressed', String(enabled));
-    button.innerHTML = `<span class="music-dot" aria-hidden="true"></span><span>${enabled ? 'Apagar música' : 'Música apagada'}</span>`;
+    button.innerHTML = `<span class="music-dot" aria-hidden="true"></span><span>${enabled ? 'Apagar música' : 'Activar música'}</span>`;
   }
 
-  function startMusic(forceReload = false) {
+  function startMusic(force = false) {
     if (!enabled || !frame) return;
-    const url = srcFor(TRACKS[current]);
-    if (forceReload || frame.src !== url) frame.src = url;
-    started = true;
+    const nextSrc = youtubeSrc(TRACKS[current]);
+    if (force || frame.src !== nextSrc) frame.src = nextSrc;
+    scheduleRetry();
+  }
+
+  function scheduleRetry() {
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(() => {
+      if (enabled && frame && !frame.src) startMusic(true);
+    }, 1200);
   }
 
   function stopMusic() {
-    started = false;
+    clearTimeout(retryTimer);
     if (frame) frame.src = '';
   }
 
@@ -100,23 +128,24 @@
     else stopMusic();
   }
 
-  function bindHomeStart() {
-    const tryStart = () => {
-      if (!enabled) return;
-      if (!started || !frame || !frame.src) startMusic(true);
-    };
-    ['pointerdown', 'touchstart', 'click', 'keydown', 'scroll'].forEach(type => window.addEventListener(type, tryStart, { passive: true, capture: true }));
+  function bindHomeAutostart() {
+    const start = () => { if (enabled) startMusic(false); };
+    ['pointerdown','touchstart','click','keydown','scroll','mousemove'].forEach(type => {
+      window.addEventListener(type, start, { passive: true, capture: true });
+    });
   }
 
   function init() {
+    cleanOldState();
     current = readTrack();
     enabled = readEnabled();
     createUi();
-    bindHomeStart();
+    bindHomeAutostart();
     if (enabled) {
       startMusic(true);
       setTimeout(() => startMusic(false), 500);
-      setTimeout(() => startMusic(false), 1600);
+      setTimeout(() => startMusic(false), 1500);
+      setTimeout(() => startMusic(false), 3000);
     }
   }
 
