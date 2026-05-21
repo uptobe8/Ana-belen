@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memoria-familiar-v11-youtube-selector-home-2026';
+const CACHE_NAME = 'memoria-familiar-v12-music-active-home-2026';
 const APP_FILES = [
   "./",
   "./index.html",
