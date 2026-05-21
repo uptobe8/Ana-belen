@@ -1,9 +1,10 @@
-const CACHE_NAME = 'memoria-familiar-v5-2026';
+const CACHE_NAME = 'memoria-familiar-v6-memory-fix-2026';
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./fix-memory.js",
   "./data/personas.js",
   "./assets/icon.svg",
   "./manifest.webmanifest",
